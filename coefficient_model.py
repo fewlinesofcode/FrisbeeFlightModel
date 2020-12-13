@@ -52,9 +52,20 @@ class Model(object):
         Returns:
             params (array_like): Array of all model parameters.
         """
-        return np.array([self.PL0, self.PLa, self.PD0, self.PDa,
-                         self.PTxwx, self.PTxwz, self.PTy0,
-                         self.PTya, self.PTywy, self.PTzwz])
+        return np.array(
+            [
+                self.PL0, 
+                self.PLa, 
+                self.PD0, 
+                self.PDa,
+                self.PTxwx, 
+                self.PTxwz, 
+                self.PTy0,
+                self.PTya, 
+                self.PTywy, 
+                self.PTzwz
+            ]
+        )
 
     def __str__(self):
         outstr = "Model:\n" + \
@@ -85,7 +96,3 @@ class Model(object):
         return self.PTzwz * wz
 
 
-# An example of initializing and printing a model
-if __name__ == "__main__":
-    test_model = Model(0.33, 1.9, 0.18, 0.69, 0.43, -1.4e-2, -8.2e-2, -1.2e-2, -1.7e-3, -3.4e-5)
-    print(test_model)

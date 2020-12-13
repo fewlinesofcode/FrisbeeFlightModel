@@ -20,7 +20,7 @@ F_gravity: gravitational force on the disc; kg*m/s^2 (vector in -z direction)
 """
 PI = np.pi
 rho = 1.225
-diameter = 0.25
+diameter = 0.21
 area = PI * diameter**2 / 4
 mass = 0.175
 g = 9.81
@@ -32,7 +32,7 @@ F_gravity = mass * g * np.array([0., 0., -1.])
 class Disc(object):
 
     def __init__(self, x, y, z, vx, vy, vz, phi, theta, gamma,
-                 phidot, thetadot, gammadot, debug=False):
+                 phidot, thetadot, gammadot, debug=True):
         """
         Constructor
         x,y,z: euclidean positions
@@ -69,24 +69,6 @@ class Disc(object):
                  "\tAngles:   (%f,%f,%f)\n" % (self.phi, self.theta, self.gamma) + \
                  "\tAngVelos: (%f,%f,%f)\n" % (self.phidot, self.thetadot, self.gammadot)
         return outstr
-
-    def initialize_model(self, *args):
-        """Used to create a model for the forces and torques on this disc.
-
-        Note: order of parameters: PL0,PLa,PD0,PDa,PTya,PTywy,PTy0,PTxwx,PTxwz,PTzwz):
-        """
-        if not args:
-            self.coefficients = coefficient_model.Model(0.33, 1.9, 0.18, 0.69, -1.3e-2, -1.7e-3, -8.2e-2, 0.43, -1.4e-2,
-                                                        -3.4e-5)
-        elif len(args) == 1 and isinstance(args[0], np.ndarray):
-            self.coefficients = coefficient_model.Model(args[0])
-        elif len(args) == 10:
-            PL0, PLa, PD0, PDa, PTxwx, PTxwz, PTy0, PTya, PTywy, PTzwz = args
-            self.coefficients = coefficient_model.Model(PL0, PLa, PD0, PDa, PTxwx, PTxwz, PTy0, PTya, PTywy, PTzwz)
-        else:
-            raise Exception("Usage error: Model initialized incorrectly.")
-        self.has_model = True
-        return
 
     def update_coordinates(self, coordinates):
         """Given some new coordinates, update the coordinates
@@ -296,6 +278,7 @@ class Disc(object):
         """
         if not self.has_model:
             raise Exception("No disc model initialized. Call initialize_model().")
+
         coordinates = self.get_coordinates()
         flight_time = time_final - time_initial
         N_times = int(flight_time / dt)
@@ -304,50 +287,3 @@ class Disc(object):
             return times, odeint(self.equations_of_motion, coordinates, times)
         else:
             return times, odeint(self.equations_of_motion, coordinates, times)[:, :3]
-
-
-if __name__ == "__main__":
-    # Using a single disc
-    x, y, z = 0.0, 0.0, 1.0
-    vx, vy, vz = 10.0, 0.0, 0.0
-    phi, theta, gamma = 0.0, 0.0, 0.0
-    phidot, thetadot, gammadot = 0.0, 0.0, 50.0
-    # Can also read in from a file for convenience
-    # x,y,z,vx,vy,vz,phi,theta,gamma,phidot,thetadot,gammadot = np.loadtxt("simple_initial_conditions.txt").T
-    test_disc = Disc(x, y, z,
-                     vx, vy, vz,
-                     phi, theta, gamma,
-                     phidot, thetadot, gammadot, debug=True)
-    test_disc.initialize_model()
-
-    print(test_disc)
-
-    # Integrating a disc's equations of motion
-    from scipy.integrate import odeint
-
-    test_disc = Disc(x, y, z,
-                     vx, vy, vz,
-                     phi, theta, gamma,
-                     phidot, thetadot, gammadot, debug=False)
-    model = np.array([0.33, 1.9, 0.18, 0.69, -1.3e-2,
-                      -1.7e-3, -8.2e-2, 0.43, -1.4e-2, -3.4e-5])
-    test_disc.initialize_model(model)
-
-    # Run the simulation code
-    # Get the times of each data point and the trajectory.
-    # trajectory contains each variable (x,y,z,vx,vy,vyz,etc.) at each timestep
-    # If you want just the x,y,z coordinates, set full_Trajectory = False. Set it to True
-    # for velocities and disc angles.
-    times, trajectory = test_disc.get_trajectory(0.0, 3.0, dt=0.0001, full_trajectory=False)
-    print("Integrating the equations of motion at 30 time steps gives the trajectory")
-    x, y, z = trajectory.T
-    # x,y,z = trajectory[:,:3].T #If full_trajetory=True
-
-    # Try plotting the variables
-    try:
-        import matplotlib.pyplot as plt
-
-        plt.plot(x, z)
-        plt.show()
-    except ImportError:
-        print("Failed to import matplotlib")
