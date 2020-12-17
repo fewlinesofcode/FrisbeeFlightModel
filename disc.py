@@ -22,10 +22,12 @@ PI = np.pi
 rho = 1.225
 diameter = 0.21
 area = PI * diameter**2 / 4
-mass = 0.175
+mass = 1.175
 g = 9.81
 Izz = 0.002352
-Ixx = Iyy = Ixy = 0.001219
+Ixx = 0.001220
+Iyy = 0.001219
+Ixy = 0.001219
 F_gravity = mass * g * np.array([0., 0., -1.])
 
 
@@ -277,7 +279,7 @@ class Disc(object):
         """Get a disc's trajectory give an initial and final time. The timestep size can be specified. This requires that the disc hass been properly initialized with a model.
         """
         if not self.has_model:
-            raise Exception("No disc model initialized. Call initialize_model().")
+            raise Exception("No disc model initialized!")
 
         coordinates = self.get_coordinates()
         flight_time = time_final - time_initial
